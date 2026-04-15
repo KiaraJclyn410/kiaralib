@@ -1,4 +1,17 @@
 #include "main.h"
+#include "pros/misc.hpp"
+#include "pros/rotation.hpp"
+#include "odometry.cpp"
+#include "helpers.cpp"
+
+pros::Rotation vEnc(16);
+pros::Rotation hEnc(17);
+pros::Imu imu(15);
+
+TrackingWheel verticalWheel(&vEnc, 2.75, 0, 1);
+TrackingWheel horizontalWheel(&hEnc, 2.75, 6, 1);
+
+Odometry odom(&verticalWheel, &horizontalWheel, &imu);
 
 /**
  * A callback function for LLEMU's center button.
