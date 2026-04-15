@@ -1,15 +1,24 @@
 #include "odometry.hpp"
+#include <cmath>
 
 Pose::Pose(double x_, double y_, double theta_) : x(x_), y(y_), theta(theta_) {}
 
-TrackingWheel::TrackingWheel(pros::Rotation* enc, float diameter, float offset_, float gearRatio_)
+TrackingWheel::TrackingWheel(pros::Rotation* enc, double diameter, double offset_, double gearRatio_)
     : encoder(enc), wheelDiameter(diameter), gearRatio(gearRatio_), offset(offset_), prevTravel(0) {}
 
-float TrackingWheel::getDelta() {
-    float travel = (encoder->get_position() / 360.0) * (wheelDiameter * M_PI) * gearRatio;
-    float delta = travel - prevTravel;
+double TrackingWheel::getTravel() const {
+    return (encoder->get_position() / 360.0) * (wheelDiameter * M_PI) * gearRatio;
+}
+
+double TrackingWheel::getDelta() {
+    double travel = getTravel();
+    double delta = travel - prevTravel;
     prevTravel = travel;
     return delta;
+}
+
+void TrackingWheel::reset() {
+    prevTravel = getTravel();
 }
 
 Odometry::Odometry(TrackingWheel* v, TrackingWheel* h, pros::Imu* imu_)
@@ -18,6 +27,8 @@ Odometry::Odometry(TrackingWheel* v, TrackingWheel* h, pros::Imu* imu_)
 void Odometry::setPose(double x, double y, double thetaDeg) {
     pose = Pose(x, y, thetaDeg * M_PI / 180.0);
     imu->set_rotation(thetaDeg);
+    vertical->reset();
+    horizontal->reset();
     prevTheta = pose.theta;
     newPose = true;
 }

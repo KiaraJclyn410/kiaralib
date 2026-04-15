@@ -1,7 +1,6 @@
 #pragma once
-#include "main.h"
 #include "pros/rotation.hpp"
-#include "helpers.hpp"
+#include "pros/imu.hpp"
 
 struct Pose {
     double x;
@@ -14,14 +13,16 @@ struct Pose {
 class TrackingWheel {
 public:
     pros::Rotation* encoder;
-    float wheelDiameter;
-    float gearRatio;
-    float offset;
-    float prevTravel;
+    double wheelDiameter;
+    double gearRatio;
+    double offset;
+    double prevTravel;
 
-    TrackingWheel(pros::Rotation* enc, float diameter, float offset_, float gearRatio_ = 1);
+    TrackingWheel(pros::Rotation* enc, double diameter, double offset_, double gearRatio_ = 1);
 
-    float getDelta();
+    double getTravel() const;
+    double getDelta();
+    void reset();
 };
 
 class Odometry {
