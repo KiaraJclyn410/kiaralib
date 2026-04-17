@@ -7,7 +7,8 @@ TrackingWheel::TrackingWheel(pros::Rotation* enc, double diameter, double offset
     : encoder(enc), wheelDiameter(diameter), gearRatio(gearRatio_), offset(offset_), prevTravel(0) {}
 
 double TrackingWheel::getTravel() const {
-    return (encoder->get_position() / 360.0) * (wheelDiameter * M_PI) * gearRatio;
+    // 36,000 centidegrees = 1 revolution
+    return (encoder->get_position() / 36000.0) * (wheelDiameter * M_PI) * gearRatio; 
 }
 
 double TrackingWheel::getDelta() {
@@ -47,17 +48,21 @@ void Odometry::update() {
         localX = deltaHorizontal;
         localY = deltaVertical;
     } else {
-        double radius = deltaVertical / deltaTheta;
-        localX = 2 * sin(deltaTheta / 2.0) * (radius + horizontal->offset);
-        localY = 2 * sin(deltaTheta / 2.0) * (radius + vertical->offset);
+        // Calculate distinct radii for both axes
+        double radiusVertical = deltaVertical / deltaTheta;
+        double radiusHorizontal = deltaHorizontal / deltaTheta; 
+        
+        // Apply the correct radius to the correct axis
+        localX = 2 * sin(deltaTheta / 2.0) * (radiusHorizontal + horizontal->offset);
+        localY = 2 * sin(deltaTheta / 2.0) * (radiusVertical + vertical->offset);
     }
 
     double avgTheta = prevTheta + deltaTheta / 2.0;
     double sinTheta = sin(avgTheta);
     double cosTheta = cos(avgTheta);
 
-    pose.x += localY * sinTheta - localX * cosTheta;
-    pose.y += localY * cosTheta + localX * sinTheta;
+    pose.x += localY * sinTheta + localX * cosTheta;
+    pose.y += localY * cosTheta - localX * sinTheta;
     pose.theta = thetaNow;
 
     prevTheta = thetaNow;
