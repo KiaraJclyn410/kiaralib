@@ -42,21 +42,28 @@ void Odometry::update() {
     // 2. Calculate change in heading using your angleError function
     // Ensure theta is in Radians for the math below!
     double thetaNow = imu->get_rotation() * M_PI / 180.0; 
+
+    if (std::isnan(thetaNow) || std::isinf(thetaNow)) {
+    return; // Skip this frame if the sensor glitched
+}
     double deltaTheta = newPose ? 0 : angleError(thetaNow, prevTheta);
     newPose = false;
 
-    double localX, localY;
+    double localX = 0, localY = 0;
 
-    // 3. Calculate local displacement
-    if (fabs(deltaTheta) < 1e-6) {
-        // If driving straight, displacement is just the sensor readings
+    if (fabs(deltaTheta) < 0.0005) { // Increased threshold for safety
         localX = deltaHorizontal;
         localY = deltaVertical;
     } else {
-        // Arc-based tracking math
-        // We SUBTRACT the offset because the sensor travels MORE than the center
-        localX = 2 * sin(deltaTheta / 2.0) * ((deltaHorizontal / deltaTheta) - horizontal->offset);
-        localY = 2 * sin(deltaTheta / 2.0) * ((deltaVertical / deltaTheta) - vertical->offset);
+        double common = 2.0 * sin(deltaTheta / 2.0) / deltaTheta;
+        localX = common * (deltaHorizontal - (deltaTheta * horizontal->offset));
+        localY = common * (deltaVertical - (deltaTheta * vertical->offset));
+    }
+
+    // CRITICAL SAFETY CHECK: 
+    // If for ANY reason localX or localY is NaN, stop here and don't ruin the pose!
+    if (std::isnan(localX) || std::isnan(localY) || std::isinf(localX) || std::isinf(localY)) {
+        return; 
     }
 
     // 4. Global transformation

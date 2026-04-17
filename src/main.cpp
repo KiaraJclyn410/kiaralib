@@ -8,8 +8,8 @@ pros::Rotation vEnc(16);
 pros::Rotation hEnc(17);
 pros::Imu imu(15);
 
-TrackingWheel verticalWheel(&vEnc, 2.75, 0, 1);
-TrackingWheel horizontalWheel(&hEnc, 2.75, 6, 1);
+TrackingWheel verticalWheel(&vEnc, 2.75, 0.1575, 1);
+TrackingWheel horizontalWheel(&hEnc, 2.75, -2.875, 1);
 
 Odometry odom(&verticalWheel, &horizontalWheel, &imu);
 
@@ -22,8 +22,7 @@ Odometry odom(&verticalWheel, &horizontalWheel, &imu);
  */
 void on_center_button() {
 	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
+	pressed = !pressed;	if (pressed) {
 		pros::lcd::set_text(2, "I was pressed!");
 	} else {
 		pros::lcd::clear_line(2);
