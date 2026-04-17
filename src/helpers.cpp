@@ -2,9 +2,10 @@
 #include "helpers.hpp"
 
 
-double angleError(double a, double b) {
-    double diff = a - b;
-    while (diff > M_PI) diff -= 2*M_PI;
-    while (diff < -M_PI) diff += 2*M_PI;
-    return diff;
+double angleError(double target, double current) {
+    double error = target - current;
+    // Use fmod to wrap instead of while loops
+    error = fmod(error + M_PI, 2 * M_PI);
+    if (error <= 0) error += 2 * M_PI;
+    return error - M_PI;
 }

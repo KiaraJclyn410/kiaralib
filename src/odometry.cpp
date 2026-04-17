@@ -35,36 +35,43 @@ void Odometry::setPose(double x, double y, double thetaDeg) {
 }
 
 void Odometry::update() {
-    double deltaVertical = vertical->getDelta();
+    // 1. Get encoder deltas
+    double deltaVertical = -(vertical->getDelta());
     double deltaHorizontal = horizontal->getDelta();
 
-    double thetaNow = imu->get_rotation() * M_PI / 180.0;
+    // 2. Calculate change in heading using your angleError function
+    // Ensure theta is in Radians for the math below!
+    double thetaNow = imu->get_rotation() * M_PI / 180.0; 
     double deltaTheta = newPose ? 0 : angleError(thetaNow, prevTheta);
     newPose = false;
 
     double localX, localY;
 
+    // 3. Calculate local displacement
     if (fabs(deltaTheta) < 1e-6) {
+        // If driving straight, displacement is just the sensor readings
         localX = deltaHorizontal;
         localY = deltaVertical;
     } else {
-        // Calculate distinct radii for both axes
-        double radiusVertical = deltaVertical / deltaTheta;
-        double radiusHorizontal = deltaHorizontal / deltaTheta; 
-        
-        // Apply the correct radius to the correct axis
-        localX = 2 * sin(deltaTheta / 2.0) * (radiusHorizontal + horizontal->offset);
-        localY = 2 * sin(deltaTheta / 2.0) * (radiusVertical + vertical->offset);
+        // Arc-based tracking math
+        // We SUBTRACT the offset because the sensor travels MORE than the center
+        localX = 2 * sin(deltaTheta / 2.0) * ((deltaHorizontal / deltaTheta) - horizontal->offset);
+        localY = 2 * sin(deltaTheta / 2.0) * ((deltaVertical / deltaTheta) - vertical->offset);
     }
 
-    double avgTheta = prevTheta + deltaTheta / 2.0;
-    double sinTheta = sin(avgTheta);
-    double cosTheta = cos(avgTheta);
+    // 4. Global transformation
+    // avgTheta represents the orientation of the robot halfway through the movement
+    double avgTheta = prevTheta + (deltaTheta / 2.0);
+    
+    double s = sin(avgTheta);
+    double c = cos(avgTheta);
 
-    pose.x += localY * sinTheta + localX * cosTheta;
-    pose.y += localY * cosTheta - localX * sinTheta;
+    // Apply rotation matrix to convert local movement to global field coordinates
+    pose.x += localY * s + localX * c;
+    pose.y += localY * c - localX * s;
+
+    // 5. Update state for next loop
     pose.theta = thetaNow;
-
     prevTheta = thetaNow;
 }
 
