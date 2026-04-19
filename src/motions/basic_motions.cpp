@@ -59,10 +59,10 @@ void turnToAngle(double targetAngle, double speed, double timeout, Odometry& odo
         double currentAngle = radToDeg(odom.pose.theta);
         double error = getTurnError(targetAngle, currentAngle);
 
-        if (std::abs(error) < 0.2) {
-            settledCount += 10; // We are in a 10ms loop
+        if (std::abs(error) < 0.1) {
+            settledCount += 10; 
         } else {
-         settledCount = 0; // If we swing back out, reset the timer
+         settledCount = 0;
         }
 
         if (settledCount > 100) break;
@@ -70,8 +70,15 @@ void turnToAngle(double targetAngle, double speed, double timeout, Odometry& odo
 
         left_mg.move(power);
         right_mg.move(-power);
+
+        pros::lcd::print(1, "Deg: %.2f", currentAngle);
+        pros::lcd::print(2, "Err: %.2f", error);
+        pros::lcd::print(3, "PWR: %.2f", power);
         pros::delay(10);
     }
     left_mg.move(0);
     right_mg.move(0);
+    pros::lcd::print(4, "exited");
+
+    
 }

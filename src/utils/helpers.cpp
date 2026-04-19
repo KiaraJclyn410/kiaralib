@@ -21,7 +21,10 @@ double normalizeRadians(double rad) {
 }
 
 double getTurnError(double target, double current) {
-    return normalizeDegrees(target - current);
+    double error = target - current;
+    while (error > 180) error -= 360;
+    while (error < -180) error += 360;
+    return error;
 }
 
 double getDistance(double x1, double y1, double x2, double y2) {

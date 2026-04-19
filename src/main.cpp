@@ -89,7 +89,7 @@ void competition_initialize() {}
 void autonomous() {
 	pros::Task odom_task(odom_task_fn);
 	
-	turnToAngle(90, 127, 80000, odom, left_mg,right_mg);
+	turnToAngle(90, 127, 2000, odom, left_mg,right_mg);
 }
 
 /**
