@@ -88,3 +88,7 @@ double Odometry::angleError(double a, double b) {
     while (diff < -M_PI) diff += 2 * M_PI;
     return diff;
 }
+
+Pose Odometry::getPose() {
+    return pose;
+}

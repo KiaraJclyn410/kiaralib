@@ -39,6 +39,7 @@ public:
 
     void setPose(double x, double y, double thetaDeg);
     void update();
+    Pose getPose();
 
 private:
     double angleError(double a, double b);

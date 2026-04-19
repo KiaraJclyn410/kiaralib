@@ -3,15 +3,28 @@
 #include "pros/rotation.hpp"
 #include "odometry.hpp"
 #include "pros/rtos.hpp"
+#include "basic_motions.hpp"
+
+pros::Controller master(pros::E_CONTROLLER_MASTER);
+	pros::MotorGroup left_mg({-18, -19, -20});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
+	pros::MotorGroup right_mg({13, 12, 11});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
 
 pros::Rotation vEnc(16);
 pros::Rotation hEnc(17);
 pros::Imu imu(15);
 
-TrackingWheel verticalWheel(&vEnc, 2.75, 0.1575, 1);
+TrackingWheel verticalWheel(&vEnc, 2.75, -0.1575, 1);
 TrackingWheel horizontalWheel(&hEnc, 2.75, -2.875, 1);
 
 Odometry odom(&verticalWheel, &horizontalWheel, &imu);
+
+ void odom_task_fn() {
+    while (true) {
+        odom.update();
+        // Run faster than the main loop for better precision
+        pros::delay(10); 
+    }
+}
 
 
 /**
@@ -70,7 +83,11 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+	pros::Task odom_task(odom_task_fn);
+	
+	turnToAngle(90, 127, 80000, odom, left_mg,right_mg);
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -86,19 +103,10 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 
- void odom_task_fn() {
-    while (true) {
-        odom.update();
-        // Run faster than the main loop for better precision
-        pros::delay(10); 
-    }
-}
+
 
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::MotorGroup left_mg({-18, -19, -20});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
-	pros::MotorGroup right_mg({13, 12, 11});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
-
+	
 	odom.setPose(0, 0,  0);
 
 
