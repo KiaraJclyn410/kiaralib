@@ -54,7 +54,7 @@ void initialize() {
 	imu.reset();  // Resets the IMU's heading to zero
 	left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 	right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-	pros::delay(2000); 
+	pros::delay(3000); 
 }
 
 /**
@@ -90,6 +90,7 @@ void autonomous() {
 	pros::Task odom_task(odom_task_fn);
 	
 	turnToAngle(90, 127, 2000, odom, left_mg,right_mg);
+	
 }
 
 /**
