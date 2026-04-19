@@ -1,5 +1,6 @@
 #include "main.h"
 #include "pros/misc.hpp"
+#include "pros/motors.h"
 #include "pros/rotation.hpp"
 #include "odometry.hpp"
 #include "pros/rtos.hpp"
@@ -51,6 +52,8 @@ void on_center_button() {
 void initialize() {
 	pros::lcd::initialize();
 	imu.reset();  // Resets the IMU's heading to zero
+	left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+	right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 	pros::delay(2000); 
 }
 
@@ -106,6 +109,8 @@ void autonomous() {
 
 
 void opcontrol() {
+	left_mg.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+	right_mg.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 	
 	odom.setPose(0, 0,  0);
 
